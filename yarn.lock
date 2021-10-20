@@ -148,6 +148,11 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
+telegraf-aws@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/telegraf-aws/-/telegraf-aws-1.0.0.tgz#524e3089f815dc34ad43cd66e2a2fca11ec2b9a2"
+  integrity sha512-0pV+TYWNAx6eTQfsaGs5aQH1nsGJH6YZQqNsaQ323ibdAiEGNeJMa4apqYNENIeTGe4BJIrlwCit0GMwyUIdkw==
+
 telegraf-session-mongodb@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/telegraf-session-mongodb/-/telegraf-session-mongodb-2.0.2.tgz#3677b8ae563021ef7deabcd8774b552c361e8435"

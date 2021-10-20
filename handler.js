@@ -2,38 +2,50 @@
 
 const { BOT_TOKEN, NODE_ENV, MONGODB_URI } = process.env;
 const { Telegraf } = require('telegraf');
-const bot = new Telegraf(BOT_TOKEN);
+const bot = new Telegraf(BOT_TOKEN, { webhookReply: true });
 const { session } = require('telegraf-session-mongodb');
 const { MongoClient } = require('mongodb');
 
-async function main() {
-  await MongoClient.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then((client) => {
-      const db = client.db();
-      bot.use(session(db, { collectionName: 'sessions' }));
-    })
-    .catch((err) => {
-      console.log(`can't connect to db`, err);
+let dbObject = null;
+const getDBConnection = async () => {
+  try {
+    if (dbObject && dbObject.serverConfig.isConnected()) return dbObject;
+
+    const client = await MongoClient.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
+    dbObject = client.db();
+    return dbObject;
+  } catch (err) {
+    throw err;
+  }
+};
 
-  bot.command('/increase', (ctx, next) => {
-    ctx.session.counter = ctx.session.counter || 0;
-    ctx.session.counter++;
-    ctx.replyWithMarkdown(`Counter updated, new value: \`${ctx.session.counter}\``);
-    return next();
-  });
+async function main() {
+  // connect to db
+  const db = await getDBConnection();
+  bot.use(session(db, { collectionName: 'sessions' }));
+  console.log('db connected');
 
-  bot.command('/stats', (ctx) => {
-    ctx.replyWithMarkdown(
-      `Database has \`${ctx.session.counter}\` messages from @${ctx.from.username || ctx.from.id}`,
-    );
-  });
+  // // add handlers
+  // bot.command('/increase', (ctx, next) => {
+  //   ctx.session.counter = ctx.session.counter || 0;
+  //   ctx.session.counter++;
+  //   ctx.replyWithMarkdown(`Counter updated, new value: \`${ctx.session.counter}\``);
+  //   return next();
+  // });
 
-  bot.command('/remove', (ctx) => {
-    ctx.replyWithMarkdown(`Removing session from database: \`${JSON.stringify(ctx.session)}\``);
-    // Setting session to null, undefined or empty object/array will trigger removing it from database
-    ctx.session = {};
-  });
+  // bot.command('/stats', (ctx) => {
+  //   ctx.replyWithMarkdown(
+  //     `Database has \`${ctx.session.counter}\` messages from @${ctx.from.username || ctx.from.id}`,
+  //   );
+  // });
+
+  // bot.command('/remove', (ctx) => {
+  //   ctx.replyWithMarkdown(`Removing session from database: \`${JSON.stringify(ctx.session)}\``);
+  //   ctx.session = {};
+  // });
 }
 
 // connect to labmda
@@ -42,18 +54,21 @@ if (NODE_ENV === 'production') {
   //   console.log('webhook added');
   // });
 
-  module.exports.linkCheckerBot = (event, context, callback) => {
-    console.log('message received', event.body, typeof event.body);
-    const body = JSON.parse(event.body);
-    bot.handleUpdate(body);
+  module.exports.linkCheckerBot = async (event, context, callback) => {
+    context.callbackWaitsForEmptyEventLoop = false;
 
-    return callback(null, {
+    const body = JSON.parse(event.body);
+    await main();
+    await bot.handleUpdate(body);
+    const response = {
       statusCode: 200,
       body: '',
-    });
+    };
+
+    return callback(null, response);
   };
 } else {
-  bot.launch();
+  main().then(() => {
+    bot.launch();
+  });
 }
-
-main();

@@ -2,6 +2,7 @@
   "dependencies": {
     "mongodb": "^3.7.2",
     "telegraf": "^3.38.0",
+    "telegraf-aws": "^1.0.0",
     "telegraf-session-mongodb": "^2.0.2"
   }
 }

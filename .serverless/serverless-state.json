@@ -179,7 +179,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/link-checker-bot/dev/1634745461514-2021-10-20T15:57:41.514Z/link-checker-bot.zip"
+                "S3Key": "serverless/link-checker-bot/dev/1634749706273-2021-10-20T17:08:26.273Z/link-checker-bot.zip"
               },
               "Handler": "handler.linkCheckerBot",
               "Runtime": "nodejs10.x",
@@ -205,14 +205,14 @@
               "LinkCheckerBotLogGroup"
             ]
           },
-          "LinkCheckerBotLambdaVersion8CqK6TlEJF1cZE3Aw6qDSGYlfhgk4RExSxG1K3HXHA": {
+          "LinkCheckerBotLambdaVersionJvExEGONII76YnYoQRwPLqhq0C6NRh3V5ww3PP2VhU": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "LinkCheckerBotLambdaFunction"
               },
-              "CodeSha256": "U2hIkuWIUSD7hV+ZRashdk6Hqr+rxqfpPE+F7XuImU8="
+              "CodeSha256": "Uf3KjeR9UqWp/uaWujfFEnQzHh7Yeg19qoGOz7vONrg="
             }
           },
           "ApiGatewayRestApi": {
@@ -333,7 +333,7 @@
               "LinkCheckerBotLambdaPermissionApiGateway"
             ]
           },
-          "ApiGatewayDeployment1634745459828": {
+          "ApiGatewayDeployment1634749704630": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -396,7 +396,7 @@
           "LinkCheckerBotLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "LinkCheckerBotLambdaVersion8CqK6TlEJF1cZE3Aw6qDSGYlfhgk4RExSxG1K3HXHA"
+              "Ref": "LinkCheckerBotLambdaVersionJvExEGONII76YnYoQRwPLqhq0C6NRh3V5ww3PP2VhU"
             },
             "Export": {
               "Name": "sls-link-checker-bot-dev-LinkCheckerBotLambdaFunctionQualifiedArn"
@@ -549,7 +549,7 @@
         "timeout": 6,
         "runtime": "nodejs10.x",
         "vpc": {},
-        "versionLogicalId": "LinkCheckerBotLambdaVersion8CqK6TlEJF1cZE3Aw6qDSGYlfhgk4RExSxG1K3HXHA"
+        "versionLogicalId": "LinkCheckerBotLambdaVersionJvExEGONII76YnYoQRwPLqhq0C6NRh3V5ww3PP2VhU"
       }
     },
     "configValidationMode": "warn",
@@ -570,7 +570,7 @@
     "artifact": "/Users/Yevhen/Projects/yojji/link-checker-bot/.serverless/link-checker-bot.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/link-checker-bot/dev/1634745461514-2021-10-20T15:57:41.514Z",
+    "artifactDirectoryName": "serverless/link-checker-bot/dev/1634749706273-2021-10-20T17:08:26.273Z",
     "artifact": "link-checker-bot.zip"
   }
 }
