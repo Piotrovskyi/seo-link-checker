@@ -161,7 +161,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/link-checker-bot/dev/1634743134523-2021-10-20T15:18:54.523Z/link-checker-bot.zip"
+          "S3Key": "serverless/link-checker-bot/dev/1634745461514-2021-10-20T15:57:41.514Z/link-checker-bot.zip"
         },
         "Handler": "handler.linkCheckerBot",
         "Runtime": "nodejs10.x",
@@ -172,7 +172,8 @@
           "Variables": {
             "BOT_TOKEN": "2093000892:AAEGZd26QueCsUcjtsIJ6tTcxPoU8hlHd1w",
             "NODE_ENV": "production",
-            "URL": "https://syprx7m2hl.execute-api.eu-west-1.amazonaws.com/dev/link-checker-bot"
+            "URL": "https://syprx7m2hl.execute-api.eu-west-1.amazonaws.com/dev/link-checker-bot",
+            "MONGODB_URI": "mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
           }
         },
         "Role": {
@@ -186,14 +187,14 @@
         "LinkCheckerBotLogGroup"
       ]
     },
-    "LinkCheckerBotLambdaVersionycO2bXECJWDgJQhMJCvi2BeVjRvUXrgHQHXCSwI4E": {
+    "LinkCheckerBotLambdaVersion8CqK6TlEJF1cZE3Aw6qDSGYlfhgk4RExSxG1K3HXHA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "LinkCheckerBotLambdaFunction"
         },
-        "CodeSha256": "v70WH0po4EaE+L7SxZ2ZvaKJIBiI82P5LPyJTDoRCJ8="
+        "CodeSha256": "U2hIkuWIUSD7hV+ZRashdk6Hqr+rxqfpPE+F7XuImU8="
       }
     },
     "ApiGatewayRestApi": {
@@ -314,7 +315,7 @@
         "LinkCheckerBotLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1634743133128": {
+    "ApiGatewayDeployment1634745459828": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -377,7 +378,7 @@
     "LinkCheckerBotLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "LinkCheckerBotLambdaVersionycO2bXECJWDgJQhMJCvi2BeVjRvUXrgHQHXCSwI4E"
+        "Ref": "LinkCheckerBotLambdaVersion8CqK6TlEJF1cZE3Aw6qDSGYlfhgk4RExSxG1K3HXHA"
       },
       "Export": {
         "Name": "sls-link-checker-bot-dev-LinkCheckerBotLambdaFunctionQualifiedArn"

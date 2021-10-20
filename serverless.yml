@@ -8,6 +8,7 @@ provider:
     BOT_TOKEN: 2093000892:AAEGZd26QueCsUcjtsIJ6tTcxPoU8hlHd1w
     NODE_ENV: production
     URL: https://syprx7m2hl.execute-api.eu-west-1.amazonaws.com/dev/link-checker-bot
+    MONGODB_URI: mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 
 functions:
   linkCheckerBot:
