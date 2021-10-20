@@ -1,8 +1,23 @@
 {
   "dependencies": {
+    "markdown-table": "^3.0.1",
     "mongodb": "^3.7.2",
-    "telegraf": "^3.38.0",
+    "table": "^6.7.2",
+    "telegraf": "4.0.0",
     "telegraf-aws": "^1.0.0",
     "telegraf-session-mongodb": "^2.0.2"
-  }
+  },
+  "name": "link-checker-bot",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "devDependencies": {
+    "eslint": "^8.0.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
