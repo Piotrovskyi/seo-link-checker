@@ -5,8 +5,40 @@ const { Telegraf, Scenes, Markup } = require('telegraf');
 const bot = new Telegraf(BOT_TOKEN, { webhookReply: true });
 const { session } = require('telegraf-session-mongodb');
 const { MongoClient } = require('mongodb');
+const axios = require('axios');
+const cheerio = require('cheerio');
+const { DateTime } = require('luxon');
 
-// console.log(table);
+async function checkLink(data) {
+  try {
+    console.log('start request', data);
+    const res = await axios(data.page);
+    console.log('page data received', data);
+    const $ = cheerio.load(res.data);
+    const links = $('a');
+
+    let domainLinks = [];
+
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i];
+      // const href = link.attribs.href;
+      if (link.attribs.href && link.attribs.href.includes(data.link)) {
+        domainLinks.push({
+          // valid: true,
+          attrs: link.attribs,
+          url: link.attribs.href,
+        });
+      }
+    }
+
+    return { ...data, valid: !!domainLinks.length, checked: new Date().toISOString() };
+  } catch (err) {
+    console.log('here');
+    console.log(err);
+    return { ...data, valid: false };
+  }
+}
+
 function isUrlValid(userInput) {
   var res = userInput.match(
     /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
@@ -109,9 +141,7 @@ async function main() {
   bot.start((ctx) => {
     return ctx.reply(
       'Welcome to link checker bot. Please add links which you want to check one by one',
-      Markup.keyboard([
-        ['Add new link', 'My links', 'Remove link'], // Row1 with 2 buttons
-      ]).resize(),
+      Markup.keyboard([['Add new link', 'My links', 'Remove link', 'Check my links']]).resize(),
     );
   });
 
@@ -120,11 +150,53 @@ async function main() {
     if (!ctx.session.links || !ctx.session.links.length) {
       return ctx.reply(`You don't have any links yet`);
     }
-    const tableStr = ctx.session.links.map((row) => [row.page, row.link].join(': ')).join('\n');
+    const tableStr = ctx.session.links
+      .map((row) => {
+        const data = {
+          page: row.page,
+          link: row.link,
+          valid: row.valid,
+          lastChecked: row.checked
+            ? DateTime.fromISO(row.checked).toLocaleString(DateTime.DATETIME_FULL)
+            : null,
+        };
+        return Object.keys(data)
+          .map((key) => (data[key] ? `${key}: ${data[key]}` : ''))
+          .filter((e) => e)
+          .join('\n');
+      })
+      .join('\n\n');
     ctx.reply(tableStr, { disable_web_page_preview: true });
   });
   bot.hears('Remove link', (ctx) => ctx.scene.enter('REMOVE_LINK'));
+  bot.hears('Check my links', async (ctx) => {
+    if (!ctx.session.links || !ctx.session.links.length) {
+      return ctx.reply(`You don't have any links yet`);
+    }
+
+    const checkedLinks = await Promise.all(ctx.session.links.map(checkLink));
+    ctx.session.links = checkedLinks;
+    ctx.reply(ctx.session.links.every((link) => link.valid) ? 'All ok' : 'Not ok, check list');
+
+    const tableStr = checkedLinks
+      .map((row) => {
+        const data = {
+          page: row.page,
+          link: row.link,
+          valid: row.valid,
+          lastChecked: DateTime.fromISO(row.checked).toLocaleString(DateTime.DATETIME_FULL),
+        };
+        return Object.keys(data)
+          .map((key) => (data[key] ? `${key}: ${data[key]}` : ''))
+          .filter((e) => e)
+          .join('\n');
+      })
+      .join('\n\n');
+    ctx.reply(tableStr, { disable_web_page_preview: true });
+  });
 }
+
+// bot.telegram.sendMessage()
 
 // connect to labmda
 if (NODE_ENV === 'production') {
