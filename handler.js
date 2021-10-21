@@ -6,10 +6,12 @@ const { Telegraf, Scenes, Markup } = require('telegraf');
 const { session } = require('telegraf-session-mongodb');
 const bot = require('./src/bot.js');
 const checkLink = require('./src/checkLink.js');
+const sendMessage = require('./src/sendMessage.js');
 
 const { DateTime } = require('luxon');
 const getDBConnection = require('./src/dbConnection.js');
 const uniqBy = require('lodash/uniqBy');
+const linksArrayToMessage = require('./src/linksArrayToMessage.js');
 
 function isUrlValid(userInput) {
   var res = userInput.match(
@@ -87,14 +89,16 @@ const newLinkWizard = new Scenes.WizardScene(
       link: ctx.message.text,
     }));
 
+    ctx.reply('Checking new link(s)', cancelMenu);
+    const checkedLinks = await Promise.all(ctx.wizard.state.data.links.map(checkLink));
+    const tableStr = linksArrayToMessage(checkedLinks);
+    sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
+
     if (!ctx.session.links) {
       ctx.session.links = [];
     }
-    ctx.session.links = uniqBy(
-      [...ctx.session.links, ...ctx.wizard.state.data.links],
-      (el) => el.page + el.link,
-    );
-    ctx.reply(`Thank you for your replies, link added to be checked`, mainMenuButtons);
+    ctx.session.links = uniqBy([...ctx.session.links, ...checkedLinks], (el) => el.page + el.link);
+    ctx.reply(`Thank you for your replies, link added to your list`, mainMenuButtons);
     return ctx.scene.leave();
   },
 );
@@ -160,23 +164,8 @@ async function main() {
     if (!ctx.session.links || !ctx.session.links.length) {
       return ctx.reply(`You don't have any links yet`);
     }
-    const tableStr = ctx.session.links
-      .map((row) => {
-        const data = {
-          page: row.page,
-          link: row.link,
-          valid: row.valid,
-          lastChecked: row.checked
-            ? DateTime.fromISO(row.checked).toLocaleString(DateTime.DATETIME_FULL)
-            : null,
-        };
-        return Object.keys(data)
-          .map((key) => (data[key] ? `${key}: ${data[key]}` : ''))
-          .filter((e) => e)
-          .join('\n');
-      })
-      .join('\n\n');
-    ctx.reply(tableStr, { disable_web_page_preview: true });
+    const tableStr = linksArrayToMessage(ctx.session.links);
+    sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
   });
   bot.hears('Remove link', (ctx) => ctx.scene.enter('REMOVE_LINK'));
   bot.hears('Check my links', async (ctx) => {
@@ -188,21 +177,8 @@ async function main() {
     ctx.session.links = checkedLinks;
     ctx.reply(ctx.session.links.every((link) => link.valid) ? 'All ok' : 'Not ok, check list');
 
-    const tableStr = checkedLinks
-      .map((row) => {
-        const data = {
-          page: row.page,
-          link: row.link,
-          valid: row.valid,
-          lastChecked: DateTime.fromISO(row.checked).toLocaleString(DateTime.DATETIME_FULL),
-        };
-        return Object.keys(data)
-          .map((key) => (data[key] ? `${key}: ${data[key]}` : ''))
-          .filter((e) => e)
-          .join('\n');
-      })
-      .join('\n\n');
-    ctx.reply(tableStr, { disable_web_page_preview: true });
+    const tableStr = linksArrayToMessage(checkedLinks);
+    sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
   });
 }
 

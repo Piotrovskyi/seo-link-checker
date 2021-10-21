@@ -3,9 +3,9 @@ const cheerio = require('cheerio');
 
 module.exports = async function checkLink(data) {
   try {
-    console.log('start request', data);
-    const res = await axios(data.page);
-    console.log('page data received', data);
+    // console.log('start request', data);
+    const res = await axios.get(data.page, { timeout: 8000 });
+    // console.log('page data received', data);
     const $ = cheerio.load(res.data);
     const links = $('a');
 
@@ -21,7 +21,7 @@ module.exports = async function checkLink(data) {
       }
     }
 
-    console.log({ domainLinks });
+    // console.log({ domainLinks });
 
     return {
       ...data,
@@ -32,6 +32,6 @@ module.exports = async function checkLink(data) {
     };
   } catch (err) {
     console.log(err);
-    return { ...data, valid: false };
+    return { ...data, valid: false, checked: new Date().toISOString(), error: err.message };
   }
 };

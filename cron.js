@@ -1,6 +1,8 @@
 const getDBConnection = require('./src/dbConnection.js');
 const checkLink = require('./src/checkLink.js');
 const bot = require('./src/bot.js');
+const botSendMessage = require('./src/botSendMessage.js');
+const linksArrayToMessage = require('./src/linksArrayToMessage.js');
 
 module.exports.cron = async (event, context, callback) => {
   const db = await getDBConnection();
@@ -15,7 +17,7 @@ module.exports.cron = async (event, context, callback) => {
       continue;
     }
 
-    const oldLinks = element.data.links;
+    // const oldLinks = element.data.links;
 
     const res = await Promise.all(element.data.links.map(checkLink));
 
@@ -30,21 +32,45 @@ module.exports.cron = async (event, context, callback) => {
     };
     await sessions.updateOne(filter, updateDoc, options);
 
-    const statusChangedLinks = res.filter((linkObj, i) => {
-      return oldLinks[i].valid !== linkObj.valid;
-    });
-    if (statusChangedLinks.length) {
-      const msg = [
-        'Status changed for links',
-        ...statusChangedLinks.map((linkObj) => `${linkObj.page}: valid - ${linkObj.valid}`),
-      ].join('\n');
+    const invalidLinks = res.filter((linkObj) => !linkObj.valid);
 
-      console.log(element.key.split(':')[0], msg);
-      bot.telegram.sendMessage(element.key.split(':')[0], msg, { disable_web_page_preview: true });
+    if (invalidLinks.length) {
+      const tableStr = linksArrayToMessage(invalidLinks);
+      const msg = 'We found some problems: \n' + tableStr;
+      botSendMessage(bot.telegram.sendMessage.bind(bot.telegram), element.key.split(':')[0], msg, {
+        disable_web_page_preview: true,
+      });
     } else {
-      console.log(element.key.split(':')[0], 'Links checked: all is ok');
-      bot.telegram.sendMessage(element.key.split(':')[0], 'Links checked: all is ok');
+      botSendMessage(
+        bot.telegram.sendMessage.bind(bot.telegram),
+        element.key.split(':')[0],
+        'Links checked: all is ok',
+      );
     }
+
+    // const statusChangedLinks = res.filter((linkObj, i) => {
+    //   return oldLinks[i].valid !== linkObj.valid;
+    // });
+    // if (statusChangedLinks.length) {
+    //   const msg = [
+    //     'Status changed for links',
+    //     ...statusChangedLinks.map((linkObj) => `${linkObj.page}: valid - ${linkObj.valid}`),
+    //   ].join('\n');
+
+    //   console.log(element.key.split(':')[0], msg);
+    //   // bot.telegram.sendMessage(element.key.split(':')[0], msg, { disable_web_page_preview: true });
+    //   botSendMessage(bot.telegram.sendMessage.bind(bot.telegram), element.key.split(':')[0], msg, {
+    //     disable_web_page_preview: true,
+    //   });
+    // } else {
+    //   console.log(element.key.split(':')[0], 'Links checked: all is ok');
+    //   bot.telegram.sendMessage(element.key.split(':')[0], 'Links checked: all is ok');
+    //   botSendMessage(
+    //     bot.telegram.sendMessage.bind(bot.telegram),
+    //     element.key.split(':')[0],
+    //     'Links checked: all is ok',
+    //   );
+    // }
   }
 
   const response = {
