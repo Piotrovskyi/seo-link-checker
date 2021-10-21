@@ -39,7 +39,8 @@ module.exports.cron = async (event, context, callback) => {
         ...statusChangedLinks.map((linkObj) => `${linkObj.page}: valid - ${linkObj.valid}`),
       ].join('\n');
 
-      bot.telegram.sendMessage(element.key.split(':')[0], msg);
+      console.log(element.key.split(':')[0], msg);
+      bot.telegram.sendMessage(element.key.split(':')[0], msg, { disable_web_page_preview: true });
     } else {
       console.log(element.key.split(':')[0], 'Links checked: all is ok');
       bot.telegram.sendMessage(element.key.split(':')[0], 'Links checked: all is ok');
