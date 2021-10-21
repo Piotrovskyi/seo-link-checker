@@ -25,6 +25,7 @@ module.exports = async function checkLink(data) {
 
     return {
       ...data,
+      error: null,
       valid:
         !!domainLinks.length &&
         domainLinks.some((link) => (link.attrs.rel || '').toLowerCase() !== 'nofollow'),
