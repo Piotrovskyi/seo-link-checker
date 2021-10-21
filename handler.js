@@ -3,7 +3,6 @@
 // eslint-disable-next-line no-undef
 const { NODE_ENV } = process.env;
 const { Telegraf, Scenes } = require('telegraf');
-// const bot = new Telegraf(BOT_TOKEN, { webhookReply: true });
 const { session } = require('telegraf-session-mongodb');
 const bot = require('./src/bot.js');
 const checkLink = require('./src/checkLink.js');
@@ -14,9 +13,9 @@ const linksArrayToMessage = require('./src/linksArrayToMessage.js');
 const newLinkWizard = require('./src/scenes/addLink.js');
 const removeLinkWizard = require('./src/scenes/removeLink.js');
 const { mainMenuButtons } = require('./src/menus.js');
+const myLinksWizard = require('./src/scenes/myLinks.js');
 
-const stage = new Scenes.Stage([newLinkWizard, removeLinkWizard]);
-
+const stage = new Scenes.Stage([newLinkWizard, removeLinkWizard, myLinksWizard]);
 async function main() {
   // connect to db
   // if (NODE_ENV !== 'production') {
@@ -29,6 +28,8 @@ async function main() {
   console.log('db connected');
 
   bot.use(stage.middleware());
+  console.log('middlewares connected');
+
   bot.hears('Cancel', (ctx) => {
     ctx.scene.leave();
     return ctx.reply('You now in main menu', mainMenuButtons(ctx));
@@ -43,11 +44,19 @@ async function main() {
 
   bot.hears('Add new link', (ctx) => ctx.scene.enter('ADD_LINK'));
   bot.hears('My links', async (ctx) => {
+    console.log('handle message');
     if (!ctx.session.links || !ctx.session.links.length) {
       return ctx.reply(`You don't have any links yet`);
     }
-    const tableStr = linksArrayToMessage(ctx.session.links);
-    await sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
+    return ctx.scene.enter('MY_LINKS');
+
+    // const byDomain = ctx.session.links.reduce(
+    //   (a, linkObj) => ({ ...a, [regexp.exec(linkObj.link)[0]]: linkObj }),
+    //   {},
+    // );
+
+    // const tableStr = linksArrayToMessage(ctx.session.links);
+    // await sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
   });
   bot.hears('Remove link', (ctx) => ctx.scene.enter('REMOVE_LINK'));
   bot.hears('Check my links', async (ctx) => {

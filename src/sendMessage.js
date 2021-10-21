@@ -1,4 +1,5 @@
 const sendMessage = async (method, msg, opts = {}) => {
+  const options = { disable_web_page_preview: true, ...opts };
   const limit = 3000;
   console.log('whole msg', msg, msg.length);
 
@@ -10,11 +11,11 @@ const sendMessage = async (method, msg, opts = {}) => {
       const partOfMessage = msg.substr(index * limit, limit);
       console.log({ partOfMessage });
       if (partOfMessage) {
-        await method(partOfMessage, opts);
+        await method(partOfMessage, options);
       }
     }
   } else {
-    await method(msg, opts);
+    await method(msg, options);
   }
 };
 
