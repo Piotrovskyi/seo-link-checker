@@ -36,7 +36,7 @@ module.exports.cron = async (event, context, callback) => {
     if (statusChangedLinks.length) {
       const msg = [
         'Status changed for links',
-        ...statusChangedLinks.map((linkObj) => `${linkObj.link}: valid - ${linkObj.valid}`),
+        ...statusChangedLinks.map((linkObj) => `${linkObj.page}: valid - ${linkObj.valid}`),
       ].join('\n');
 
       bot.telegram.sendMessage(element.key.split(':')[0], msg);

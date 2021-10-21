@@ -15,15 +15,21 @@ module.exports = async function checkLink(data) {
       const link = links[i];
       if (link.attribs.href && link.attribs.href.includes(data.link)) {
         domainLinks.push({
-          attrs: link.attribs,
+          attrs: link.attribs || {},
           url: link.attribs.href,
         });
       }
     }
 
-    // console.log({ domainLinks });
+    console.log({ domainLinks });
 
-    return { ...data, valid: !!domainLinks.length, checked: new Date().toISOString() };
+    return {
+      ...data,
+      valid:
+        !!domainLinks.length &&
+        domainLinks.some((link) => (link.attrs.rel || '').toLowerCase() !== 'nofollow'),
+      checked: new Date().toISOString(),
+    };
   } catch (err) {
     console.log(err);
     return { ...data, valid: false };
