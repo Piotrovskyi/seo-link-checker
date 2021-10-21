@@ -5,6 +5,10 @@ const botSendMessage = require('./src/botSendMessage.js');
 const linksArrayToMessage = require('./src/linksArrayToMessage.js');
 
 module.exports.cron = async (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
+  const ray = Math.random();
+  console.log('start cron', ray);
+
   const db = await getDBConnection();
   const sessions = db.collection('sessions');
   const findResult = await sessions.find({}).toArray();
@@ -33,17 +37,24 @@ module.exports.cron = async (event, context, callback) => {
     if (invalidLinks.length) {
       const tableStr = linksArrayToMessage(invalidLinks);
       const msg = 'We found some problems: \n' + tableStr;
-      botSendMessage(bot.telegram.sendMessage.bind(bot.telegram), element.key.split(':')[0], msg, {
-        disable_web_page_preview: true,
-      });
-    } else {
-      botSendMessage(
+      await botSendMessage(
         bot.telegram.sendMessage.bind(bot.telegram),
         element.key.split(':')[0],
-        'Links checked: all is ok',
+        msg,
+        {
+          disable_web_page_preview: true,
+        },
+      );
+    } else {
+      await botSendMessage(
+        bot.telegram.sendMessage.bind(bot.telegram),
+        element.key.split(':')[0],
+        'Links checked: no issues found',
       );
     }
   }
+
+  console.log('finish cron', ray);
 
   const response = {
     statusCode: 200,
