@@ -17,6 +17,5 @@ module.exports = (linkArray) => {
     })
     .join('\n\n');
 
-  console.log({ msg });
   return msg;
 };

@@ -42,12 +42,12 @@ async function main() {
   });
 
   bot.hears('Add new link', (ctx) => ctx.scene.enter('ADD_LINK'));
-  bot.hears('My links', (ctx) => {
+  bot.hears('My links', async (ctx) => {
     if (!ctx.session.links || !ctx.session.links.length) {
       return ctx.reply(`You don't have any links yet`);
     }
     const tableStr = linksArrayToMessage(ctx.session.links);
-    sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
+    await sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
   });
   bot.hears('Remove link', (ctx) => ctx.scene.enter('REMOVE_LINK'));
   bot.hears('Check my links', async (ctx) => {
@@ -57,10 +57,10 @@ async function main() {
 
     const checkedLinks = await Promise.all(ctx.session.links.map(checkLink));
     ctx.session.links = checkedLinks;
-    ctx.reply(ctx.session.links.every((link) => link.valid) ? 'All ok' : 'Not ok, check list');
 
     const tableStr = linksArrayToMessage(checkedLinks);
-    sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
+    await sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
+    ctx.reply(ctx.session.links.every((link) => link.valid) ? 'All ok' : 'Not ok, check list');
   });
 }
 
@@ -68,10 +68,6 @@ async function main() {
 
 // connect to labmda
 if (NODE_ENV === 'production') {
-  // bot.telegram.setWebhook(process.env.URL).then(() => {
-  //   console.log('webhook added');
-  // });
-
   module.exports.linkCheckerBot = async (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
 
