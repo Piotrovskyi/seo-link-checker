@@ -14,6 +14,7 @@ const newLinkWizard = require('./src/scenes/addLink.js');
 const removeLinkWizard = require('./src/scenes/removeLink.js');
 const { mainMenuButtons } = require('./src/menus.js');
 const myLinksWizard = require('./src/scenes/myLinks.js');
+const { DateTime } = require('luxon');
 
 const stage = new Scenes.Stage([newLinkWizard, removeLinkWizard, myLinksWizard]);
 async function main() {
@@ -64,11 +65,22 @@ async function main() {
       return ctx.reply(`You don't have any links yet`);
     }
 
+    console.log(
+      DateTime.fromISO(ctx.session.manualCheckTimeStamp).diffNow('minutes').toObject().minutes,
+    );
+
+    if (
+      DateTime.fromISO(ctx.session.manualCheckTimeStamp).diffNow('minutes').toObject().minutes > -1
+    ) {
+      return ctx.reply('You can do manual check only once in a minute, try again later');
+    }
+
     const checkedLinks = await Promise.all(ctx.session.links.map(checkLink));
     ctx.session.links = checkedLinks;
 
     const tableStr = linksArrayToMessage(checkedLinks);
     await sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
+    ctx.session.manualCheckTimeStamp = new Date().toISOString();
     ctx.reply(ctx.session.links.every((link) => link.valid) ? 'All ok' : 'Not ok, check list');
   });
 }
