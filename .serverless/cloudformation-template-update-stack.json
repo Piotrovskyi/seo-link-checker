@@ -77,6 +77,12 @@
         "LogGroupName": "/aws/lambda/link-checker-bot-dev-linkCheckerBot"
       }
     },
+    "CronLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/link-checker-bot-dev-cron"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -161,10 +167,10 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/link-checker-bot/dev/1634750623332-2021-10-20T17:23:43.332Z/link-checker-bot.zip"
+          "S3Key": "serverless/link-checker-bot/dev/1634819288175-2021-10-21T12:28:08.175Z/link-checker-bot.zip"
         },
         "Handler": "handler.linkCheckerBot",
-        "Runtime": "nodejs10.x",
+        "Runtime": "nodejs12.x",
         "FunctionName": "link-checker-bot-dev-linkCheckerBot",
         "MemorySize": 1024,
         "Timeout": 6,
@@ -187,14 +193,94 @@
         "LinkCheckerBotLogGroup"
       ]
     },
-    "LinkCheckerBotLambdaVersionPL5RaiyNa99GhHJXIrOyOwV04eKwJEQ1Dt7pwOSUXU": {
+    "CronLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/link-checker-bot/dev/1634819288175-2021-10-21T12:28:08.175Z/link-checker-bot.zip"
+        },
+        "Handler": "cron.cron",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "link-checker-bot-dev-cron",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "BOT_TOKEN": "2093000892:AAEGZd26QueCsUcjtsIJ6tTcxPoU8hlHd1w",
+            "NODE_ENV": "production",
+            "URL": "https://syprx7m2hl.execute-api.eu-west-1.amazonaws.com/dev/link-checker-bot",
+            "MONGODB_URI": "mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CronLogGroup"
+      ]
+    },
+    "LinkCheckerBotLambdaVersionla7uddDfrMAQEe29IVC7G4RzfdVODVqaPMb6JWS2bE": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "LinkCheckerBotLambdaFunction"
         },
-        "CodeSha256": "/s6y+aScNj97aQy0iBq5F0p/slsHm4FugTfRUfoRseA="
+        "CodeSha256": "I8Qs41/+Dw7k5RGV/R7/b02vA1wU9tmvdpmZBDTkvk8="
+      }
+    },
+    "CronLambdaVersionBscRPadocNFNhIp7uFW02kCeQ2OfNPzTzwQilTKQGc": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CronLambdaFunction"
+        },
+        "CodeSha256": "I8Qs41/+Dw7k5RGV/R7/b02vA1wU9tmvdpmZBDTkvk8="
+      }
+    },
+    "CronEventsRuleSchedule1": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "ScheduleExpression": "rate(30 minutes)",
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "CronLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Id": "cronSchedule"
+          }
+        ]
+      }
+    },
+    "CronLambdaPermissionEventsRuleSchedule1": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CronLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CronEventsRuleSchedule1",
+            "Arn"
+          ]
+        }
       }
     },
     "ApiGatewayRestApi": {
@@ -315,7 +401,7 @@
         "LinkCheckerBotLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1634750621726": {
+    "ApiGatewayDeployment1634819285248": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -378,10 +464,19 @@
     "LinkCheckerBotLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "LinkCheckerBotLambdaVersionPL5RaiyNa99GhHJXIrOyOwV04eKwJEQ1Dt7pwOSUXU"
+        "Ref": "LinkCheckerBotLambdaVersionla7uddDfrMAQEe29IVC7G4RzfdVODVqaPMb6JWS2bE"
       },
       "Export": {
         "Name": "sls-link-checker-bot-dev-LinkCheckerBotLambdaFunctionQualifiedArn"
+      }
+    },
+    "CronLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CronLambdaVersionBscRPadocNFNhIp7uFW02kCeQ2OfNPzTzwQilTKQGc"
+      },
+      "Export": {
+        "Name": "sls-link-checker-bot-dev-CronLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {

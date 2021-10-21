@@ -18,3 +18,8 @@ functions:
           path: link-checker-bot
           method: post
           cors: true
+  cron:
+    handler: cron.cron
+    events:
+      - schedule: rate(30 minutes)
+
