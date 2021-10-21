@@ -6,7 +6,7 @@ module.exports = (linkArray) => {
       const data = {
         page: row.page,
         link: row.link,
-        valid: row.valid,
+        valid: row.valid ? '✅' : '❌',
         lastChecked: DateTime.fromISO(row.checked).toLocaleString(DateTime.DATETIME_FULL),
         error: row.error,
       };
@@ -17,5 +17,6 @@ module.exports = (linkArray) => {
     })
     .join('\n\n');
 
+  console.log({ msg });
   return msg;
 };

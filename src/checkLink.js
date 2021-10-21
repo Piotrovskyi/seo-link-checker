@@ -31,7 +31,7 @@ module.exports = async function checkLink(data) {
       checked: new Date().toISOString(),
     };
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
     return { ...data, valid: false, checked: new Date().toISOString(), error: err.message };
   }
 };

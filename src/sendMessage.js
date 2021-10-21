@@ -1,12 +1,15 @@
-const sendMessage = (method, msg, opts = {}) => {
-  const limit = 4096;
+const sendMessage = async (method, msg, opts = {}) => {
+  const limit = 3000;
+
   if (msg.length > limit) {
-    for (let index = 0; index < msg.length + 1 / limit; index++) {
+    for (let index = 0; index < msg.length / limit + 1; index++) {
       const partOfMessage = msg.substr(index * limit, limit);
-      method(partOfMessage, opts);
+      if (partOfMessage) {
+        await method(partOfMessage, opts);
+      }
     }
   } else {
-    method(msg, opts);
+    await method(msg, opts);
   }
 };
 

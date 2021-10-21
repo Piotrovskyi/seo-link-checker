@@ -1,145 +1,27 @@
 'use strict';
 
-const { BOT_TOKEN, NODE_ENV } = process.env;
-const { Telegraf, Scenes, Markup } = require('telegraf');
+// eslint-disable-next-line no-undef
+const { NODE_ENV } = process.env;
+const { Telegraf, Scenes } = require('telegraf');
 // const bot = new Telegraf(BOT_TOKEN, { webhookReply: true });
 const { session } = require('telegraf-session-mongodb');
 const bot = require('./src/bot.js');
 const checkLink = require('./src/checkLink.js');
 const sendMessage = require('./src/sendMessage.js');
 
-const { DateTime } = require('luxon');
 const getDBConnection = require('./src/dbConnection.js');
-const uniqBy = require('lodash/uniqBy');
 const linksArrayToMessage = require('./src/linksArrayToMessage.js');
-
-function isUrlValid(userInput) {
-  var res = userInput.match(
-    /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g,
-  );
-
-  if (res == null) return false;
-  else return true;
-}
-
-const mainMenuButtons = Markup.keyboard([
-  ['Add new link', 'My links', 'Remove link', 'Check my links'],
-]).resize();
-const cancelMenu = Markup.keyboard([['Cancel']]).resize();
-
-const newLinkWizard = new Scenes.WizardScene(
-  'ADD_LINK',
-  {
-    enterHandlers: [
-      (ctx) => {
-        ctx.reply(
-          'Please insert page which should to be checked? Or a list of pages splitted by comma or new line',
-          cancelMenu,
-        );
-      },
-    ],
-  },
-
-  (ctx) => {
-    if (ctx.message.text === 'Cancel') {
-      ctx.scene.leave();
-      return ctx.reply('You now in main menu', mainMenuButtons);
-    }
-    ctx.wizard.state.data = {};
-
-    const msg = ctx.message.text;
-
-    const splittedByComa = msg.split(',').map((el) => el.trim());
-    const splittedByNewLine = msg.split('\n').map((el) => el.trim());
-
-    if (
-      !(
-        (msg.includes(',') && splittedByComa.every(isUrlValid)) ||
-        (msg.includes('\n') && splittedByNewLine.every(isUrlValid)) ||
-        isUrlValid(msg)
-      )
-    ) {
-      ctx.reply('Please enter a valid url', cancelMenu);
-      return;
-    }
-
-    if (msg.includes(',')) {
-      ctx.wizard.state.data.links = splittedByComa.map((el) => ({ page: el }));
-    } else if (msg.includes('\n')) {
-      ctx.wizard.state.data.links = splittedByNewLine.map((el) => ({ page: el }));
-    } else if (isUrlValid(msg)) {
-      ctx.wizard.state.data.links = [{ page: ctx.message.text }];
-    }
-
-    ctx.reply('Enter domain which should be on this pages', cancelMenu);
-    return ctx.wizard.next();
-  },
-  async (ctx) => {
-    if (ctx.message.text === 'Cancel') {
-      ctx.scene.leave();
-      return ctx.reply('You now in main menu', mainMenuButtons);
-    }
-    if (!isUrlValid(ctx.message.text)) {
-      ctx.reply('Please enter a valid url', cancelMenu);
-      return;
-    }
-
-    ctx.wizard.state.data.links = ctx.wizard.state.data.links.map((el) => ({
-      ...el,
-      link: ctx.message.text,
-    }));
-
-    ctx.reply('Checking new link(s)', cancelMenu);
-    const checkedLinks = await Promise.all(ctx.wizard.state.data.links.map(checkLink));
-    const tableStr = linksArrayToMessage(checkedLinks);
-    sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
-
-    if (!ctx.session.links) {
-      ctx.session.links = [];
-    }
-    ctx.session.links = uniqBy([...ctx.session.links, ...checkedLinks], (el) => el.page + el.link);
-    ctx.reply(`Thank you for your replies, link added to your list`, mainMenuButtons);
-    return ctx.scene.leave();
-  },
-);
-
-const removeLinkWizard = new Scenes.WizardScene(
-  'REMOVE_LINK',
-  {
-    enterHandlers: [
-      (ctx) => {
-        ctx.reply('Please insert page which we should delete?', cancelMenu);
-      },
-    ],
-  },
-
-  async (ctx) => {
-    if (ctx.message.text === 'Cancel') {
-      ctx.scene.leave();
-      return ctx.reply('You now in main menu', mainMenuButtons);
-    }
-    if (!isUrlValid(ctx.message.text)) {
-      ctx.reply('Please enter a valid url', cancelMenu);
-      return;
-    }
-
-    if (!ctx.session.links) {
-      ctx.session.links = [];
-    }
-    ctx.session.links = ctx.session.links.filter((old) => old.page !== ctx.message.text);
-
-    ctx.reply(`link removed`, mainMenuButtons);
-    return ctx.scene.leave();
-  },
-);
+const newLinkWizard = require('./src/scenes/addLink.js');
+const removeLinkWizard = require('./src/scenes/removeLink.js');
+const { mainMenuButtons } = require('./src/menus.js');
 
 const stage = new Scenes.Stage([newLinkWizard, removeLinkWizard]);
 
 async function main() {
   // connect to db
-  if (NODE_ENV !== 'production') {
-    bot.use(Telegraf.log());
-  }
+  // if (NODE_ENV !== 'production') {
+  bot.use(Telegraf.log());
+  // }
 
   const db = await getDBConnection();
 
@@ -149,13 +31,13 @@ async function main() {
   bot.use(stage.middleware());
   bot.hears('Cancel', (ctx) => {
     ctx.scene.leave();
-    return ctx.reply('You now in main menu', mainMenuButtons);
+    return ctx.reply('You now in main menu', mainMenuButtons(ctx));
   });
 
   bot.start((ctx) => {
     return ctx.reply(
       'Welcome to link checker bot. Please add links which you want to check one by one',
-      mainMenuButtons,
+      mainMenuButtons(ctx),
     );
   });
 
