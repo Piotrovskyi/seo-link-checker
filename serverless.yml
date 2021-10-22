@@ -8,6 +8,7 @@ provider:
     BOT_TOKEN: 2093000892:AAEGZd26QueCsUcjtsIJ6tTcxPoU8hlHd1w
     NODE_ENV: production
     MONGODB_URI: mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+    OWNER_CHAT_ADDRESS: 75801717
 
 functions:
   linkCheckerBot:

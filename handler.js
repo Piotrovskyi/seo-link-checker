@@ -1,7 +1,7 @@
 'use strict';
 
 // eslint-disable-next-line no-undef
-const { NODE_ENV } = process.env;
+const { NODE_ENV, OWNER_CHAT_ADDRESS } = process.env;
 const { Telegraf, Scenes } = require('telegraf');
 const { session } = require('telegraf-session-mongodb');
 const bot = require('./src/bot.js');
@@ -15,18 +15,28 @@ const removeLinkWizard = require('./src/scenes/removeLink.js');
 const { mainMenuButtons, add, list, remove, check } = require('./src/menus.js');
 const myLinksWizard = require('./src/scenes/myLinks.js');
 const { DateTime } = require('luxon');
+const botSendMessage = require('./src/botSendMessage.js');
 
 const stage = new Scenes.Stage([newLinkWizard, removeLinkWizard, myLinksWizard]);
+const fullName = (msg) => msg.from.first_name + ' ' + msg.from.last_name;
 async function main() {
-  // connect to db
-  // if (NODE_ENV !== 'production') {
   bot.use(Telegraf.log());
-  // }
 
+  // connect to db
   const db = await getDBConnection();
 
   bot.use(session(db, { collectionName: 'sessions' }));
   console.log('db connected');
+
+  bot.use(async (ctx, next) => {
+    ctx.session.user = ctx.message.from;
+    await botSendMessage(
+      bot.telegram.sendMessage.bind(bot.telegram),
+      OWNER_CHAT_ADDRESS,
+      `⚙️ Sys message (${fullName(ctx.message)})\n` + ctx.message.text,
+    ).catch(() => {});
+    await next(); // runs next middleware
+  });
 
   bot.use(stage.middleware());
   console.log('middlewares connected');
@@ -92,9 +102,18 @@ if (NODE_ENV === 'production') {
   module.exports.linkCheckerBot = async (event, context, callback) => {
     context.callbackWaitsForEmptyEventLoop = false;
 
-    const body = JSON.parse(event.body);
-    await main();
-    await bot.handleUpdate(body);
+    try {
+      const body = JSON.parse(event.body);
+      await main();
+      await bot.handleUpdate(body);
+    } catch (err) {
+      await botSendMessage(
+        bot.telegram.sendMessage.bind(bot.telegram),
+        OWNER_CHAT_ADDRESS,
+        '⚙️ Sys err message\n' + err,
+      );
+    }
+
     const response = {
       statusCode: 200,
       body: '',
