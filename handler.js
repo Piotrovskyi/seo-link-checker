@@ -12,7 +12,7 @@ const getDBConnection = require('./src/dbConnection.js');
 const linksArrayToMessage = require('./src/linksArrayToMessage.js');
 const newLinkWizard = require('./src/scenes/addLink.js');
 const removeLinkWizard = require('./src/scenes/removeLink.js');
-const { mainMenuButtons } = require('./src/menus.js');
+const { mainMenuButtons, add, list, remove, check } = require('./src/menus.js');
 const myLinksWizard = require('./src/scenes/myLinks.js');
 const { DateTime } = require('luxon');
 
@@ -43,8 +43,8 @@ async function main() {
     );
   });
 
-  bot.hears('Add new link', (ctx) => ctx.scene.enter('ADD_LINK'));
-  bot.hears('My links', async (ctx) => {
+  bot.hears(add, (ctx) => ctx.scene.enter('ADD_LINK'));
+  bot.hears(list, async (ctx) => {
     console.log('handle message');
     if (!ctx.session.links || !ctx.session.links.length) {
       return ctx.reply(`You don't have any links yet`);
@@ -59,8 +59,8 @@ async function main() {
     // const tableStr = linksArrayToMessage(ctx.session.links);
     // await sendMessage(ctx.reply.bind(ctx), tableStr, { disable_web_page_preview: true });
   });
-  bot.hears('Remove link', (ctx) => ctx.scene.enter('REMOVE_LINK'));
-  bot.hears('Check my links', async (ctx) => {
+  bot.hears(remove, (ctx) => ctx.scene.enter('REMOVE_LINK'));
+  bot.hears(check, async (ctx) => {
     if (!ctx.session.links || !ctx.session.links.length) {
       return ctx.reply(`You don't have any links yet`);
     }
