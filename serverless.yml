@@ -2,7 +2,7 @@ service: link-checker-bot
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   region: eu-west-1
   environment:
     BOT_TOKEN: 2093000892:AAEGZd26QueCsUcjtsIJ6tTcxPoU8hlHd1w
