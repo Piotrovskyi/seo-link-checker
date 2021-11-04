@@ -1,1 +1,1 @@
-serverless deploy && register.sh
+serverless deploy && sh ./register.sh

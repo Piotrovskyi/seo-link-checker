@@ -107,6 +107,7 @@ if (NODE_ENV === 'production') {
       await main();
       await bot.handleUpdate(body);
     } catch (err) {
+      console.log(err);
       await botSendMessage(
         bot.telegram.sendMessage.bind(bot.telegram),
         OWNER_CHAT_ADDRESS,
