@@ -1,10 +1,11 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { CHECK_LINK_TIMEOUT } = process.env;
 
 module.exports = async function checkLink(data) {
   try {
     // console.log('start request', data);
-    const res = await axios.get(data.page, { timeout: 8000 });
+    const res = await axios.get(data.page, { timeout: CHECK_LINK_TIMEOUT || 8000 });
     // console.log('page data received', data);
     const $ = cheerio.load(res.data);
     const links = $('a');

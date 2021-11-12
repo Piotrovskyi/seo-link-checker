@@ -1,11 +1,12 @@
 {
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.39.0",
     "axios": "^0.23.0",
     "cheerio": "^1.0.0-rc.10",
     "lodash": "^4.17.21",
     "luxon": "^2.0.2",
     "markdown-table": "^3.0.1",
-    "mongodb": "^3.7.2",
+    "mongodb": "^3.7.3",
     "table": "^6.7.2",
     "telegraf": "4.0.0",
     "telegraf-aws": "^1.0.0",

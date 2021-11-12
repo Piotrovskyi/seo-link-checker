@@ -9,17 +9,43 @@ provider:
     NODE_ENV: production
     MONGODB_URI: mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
     OWNER_CHAT_ADDRESS: 75801717
+    CHECK_LINK_TIMEOUT: 6000
 
 functions:
   linkCheckerBot:
     handler: handler.linkCheckerBot
+    memorySize: 128
+    timeout: 3
     events:
       - http:
           path: link-checker-bot
           method: post
           cors: true
-  cron:
-    handler: cron.cron
+
+  # cron:
+  #   handler: cron.cron
+  #   events:
+  #     - schedule: cron(0 8 ? * MON *)
+
+  schedule:
+    handler: schedule.schedule
+    memorySize: 128
+    timeout: 3
     events:
       - schedule: cron(0 8 ? * MON *)
+
+  checkScheduledLink:
+    handler: checkScheduledLink.checkScheduledLink
+    memorySize: 256
+    timeout: 10
+    reservedConcurrency: 2
+    events:
+      - sqs: arn:aws:sqs:eu-west-1:118765549827:LinkCheckerBotQueue
+
+resources:
+  Resources:
+    MyQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "LinkCheckerBotQueue"
 
