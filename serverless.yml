@@ -9,7 +9,7 @@ provider:
     NODE_ENV: production
     MONGODB_URI: mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
     OWNER_CHAT_ADDRESS: 75801717
-    CHECK_LINK_TIMEOUT: 6000
+    CHECK_LINK_TIMEOUT: 10000
 
 functions:
   linkCheckerBot:
