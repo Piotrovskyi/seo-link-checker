@@ -29,12 +29,14 @@ async function main() {
   console.log('db connected');
 
   bot.use(async (ctx, next) => {
-    ctx.session.user = ctx.message.from;
-    await botSendMessage(
-      bot.telegram.sendMessage.bind(bot.telegram),
-      OWNER_CHAT_ADDRESS,
-      `⚙️ Sys message (${fullName(ctx.message)})\n` + ctx.message.text,
-    ).catch(() => {});
+    if (ctx.message) {
+      ctx.session.user = ctx.message.from;
+      await botSendMessage(
+        bot.telegram.sendMessage.bind(bot.telegram),
+        OWNER_CHAT_ADDRESS,
+        `⚙️ Sys message (${fullName(ctx.message)})\n` + ctx.message.text,
+      ).catch(() => {});
+    }
     await next(); // runs next middleware
   });
 
