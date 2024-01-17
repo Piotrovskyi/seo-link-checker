@@ -5,15 +5,15 @@ provider:
   runtime: nodejs14.x
   region: eu-west-1
   environment:
-    BOT_TOKEN: 2093000892:AAEGZd26QueCsUcjtsIJ6tTcxPoU8hlHd1w
+    BOT_TOKEN: <telegram bot token>
     NODE_ENV: production
-    MONGODB_URI: mongodb+srv://telegraf-user:cuBwuk-4rizda-towfiw@salary-bot-yojji-sessio.sn23y.gcp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-    OWNER_CHAT_ADDRESS: 75801717
+    MONGODB_URI: <mongo uri>
+    OWNER_CHAT_ADDRESS: <owner chat address>
     CHECK_LINK_TIMEOUT: 10000
 
 functions:
   linkCheckerBot:
-    handler: handler.linkCheckerBot
+    handler: bot.handler.linkCheckerBot
     memorySize: 128
     timeout: 3
     events:
@@ -28,19 +28,19 @@ functions:
   #     - schedule: cron(0 8 ? * MON *)
 
   schedule:
-    handler: schedule.schedule
+    handler: link-checker.schedule.schedule
     memorySize: 128
     timeout: 3
     events:
       - schedule: cron(0 8 ? * MON *)
 
   checkScheduledLink:
-    handler: checkScheduledLink.checkScheduledLink
+    handler: link-checker.checkScheduledLink.checkScheduledLink
     memorySize: 256
     timeout: 10
     reservedConcurrency: 2
     events:
-      - sqs: arn:aws:sqs:eu-west-1:118765549827:LinkCheckerBotQueue
+      - sqs: arn:aws:sqs:eu-west-1<sqs address>:LinkCheckerBotQueue
 
 resources:
   Resources:

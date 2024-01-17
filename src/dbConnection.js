@@ -1,5 +1,5 @@
 const { MONGODB_URI } = process.env;
-const { MongoClient } = require('mongodb');
+const { MongoClient } = require("mongodb");
 
 let dbObject = null;
 let client = new MongoClient(MONGODB_URI, {
@@ -14,7 +14,7 @@ const getDBConnection = async () => {
   client = await clientPromise;
   dbObject = client.db();
 
-  console.log('db connected');
+  console.log("db connected");
   return dbObject;
 };
 
